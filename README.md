@@ -150,3 +150,7 @@ make reuse DATASET=/path/to/dataset.yaml \
 强化学习后端来自本地 acl_clean，整合说明与来源清单见 [hardening/README.md](hardening/README.md) 和 [UPSTREAM_MANIFEST.json](hardening/UPSTREAM_MANIFEST.json)。
 
 已有验证包含 41 项回归测试，以及 RISC-V test2 前 3 图的真实数据全流程冒烟；详细范围、环境和限制见 [验证记录](docs/VALIDATION.md)。
+
+## 开源许可证
+
+本项目采用 [MIT License](LICENSE)。源码来源记录见上文及对应 manifest；第三方依赖遵循各自的许可证。
