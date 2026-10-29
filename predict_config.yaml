@@ -1,0 +1,50 @@
+# path to the checkpoint file containing the model
+model_path: FsimNN
+# path to prediction results
+output_path: ./predictions/
+
+dataset:
+  split_mode: feature_coverage
+  root_dir: "../data/data/riscy_test/test"
+  train_val_dirs: ['../data/data/riscy_test/test1/']
+  test_dirs: ['../data/data/riscy_test/test1/']
+  feature_coverage:
+    train_ratio: 0.6
+    val_ratio: 0.2
+    bins: 3
+    min_per_group: 1
+    group_feature: hier_id
+    features:
+      - toggle_rate
+      - duty_cycle
+      - fanin
+      - fanout
+# model configuration
+model:
+  num_classes: 5
+  edge_vector_size: 8
+  time_window_size: 60
+  num_nodes: 2131
+  name: ASPP_STGATs
+ 
+
+  #name: STGCNs
+  feat_list: [1, 16, 32, 64, 32]
+  dilation_list: [1, 2, 4, 8]
+  layer_types: TSTNTSTN
+
+  #name: ASPP_STGCNs
+  aspp_dilation_list: [2, 4, 8]
+  aspp_t_out_size: 1
+  aspp_s_hid_size: 16
+  s_feat_size_list: [32, 64, 32, 16]
+  control_str: SNSNSN
+
+  #name: ASPP_STGATs
+  #aspp_dilation_list: [2, 4, 8]
+  #aspp_t_out_size: 1
+  #aspp_s_hid_size: 16
+  edge_hid_size: 4
+  s_feat_size: 16
+  num_spatio_layers: 3
+  gat_hid_heads: 1

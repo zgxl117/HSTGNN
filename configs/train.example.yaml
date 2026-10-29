@@ -1,0 +1,73 @@
+# TEMPLATE: prepare data, set num_nodes and choose fresh run paths before use.
+manual_seed: 3407
+dataset:
+  split_mode: feature_coverage
+  root_dir: ./runs/example/cache
+  train_val_dirs:
+  - ./data/circuit/campaign
+  test_dirs:
+  - ./data/circuit/campaign
+  feature_coverage:
+    train_ratio: 0.6
+    val_ratio: 0.2
+    bins: 3
+    min_per_group: 1
+    group_feature: hier_id
+    features:
+    - toggle_rate
+    - duty_cycle
+    - fanin
+    - fanout
+loss:
+  name: weighted_ce
+  class_weights:
+  - 1.0
+  - 2.0
+  - 1.0
+  - 1.0
+  - 1.5
+model:
+  num_classes: 5
+  edge_vector_size: 8
+  time_window_size: 60
+  num_nodes: 229
+  name: ASPP_STGATs
+  feat_list:
+  - 1
+  - 16
+  - 32
+  - 64
+  - 32
+  dilation_list:
+  - 1
+  - 2
+  - 4
+  - 8
+  layer_types: TSTNTSTN
+  aspp_dilation_list:
+  - 2
+  - 4
+  - 8
+  aspp_t_out_size: 1
+  aspp_s_hid_size: 16
+  s_feat_size_list:
+  - 32
+  - 64
+  - 32
+  - 16
+  control_str: SNSNSN
+  edge_hid_size: 4
+  s_feat_size: 16
+  num_spatio_layers: 3
+  gat_hid_heads: 1
+trainer:
+  epochs: 10
+  batch_size: 1
+  checkpoint_dir: ./runs/example/checkpoints
+  validate_after_epochs: 1
+  early_stop_patience: 80
+optimizer:
+  learning_rate: 0.0005
+  weight_decay: 1.0e-05
+  factor: 0.5
+  patience: 20

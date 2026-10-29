@@ -1,0 +1,4 @@
+# 当前数据来源；路径相对于 HSTGNN 根目录。
+include_local: false
+roots:
+  - ../AI4FaultSim/fault-sim/FsimNNs/data/data

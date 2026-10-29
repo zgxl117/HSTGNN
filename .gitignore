@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+lightning_logs/
+FsimNN/
+predictions/
+/data/
+*.ckpt
+*.pt
+*.pkl
+*:Zone.Identifier
+
+runs/
+.venv/
+fault_injection.txt
+
+*.pth
+.mplcache/
+hardening/results/
+hardening/logs/
+hardening/checkpoints/
+
+# Generated task configurations; keep portable examples
+/configs/*.yaml
+!/configs/*.example.yaml
+
+# Local credentials and machine settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key

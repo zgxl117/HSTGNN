@@ -1,0 +1,38 @@
+schema_version: 1
+name: my_circuit
+description: 复制到你的 campaign 目录，修改模型维度和训练设置。
+manual_seed: 3407
+dataset:
+  train_val_dirs:
+  - .
+  test_dirs:
+  - .
+  split_mode: feature_coverage
+  feature_coverage:
+    train_ratio: 0.6
+    val_ratio: 0.2
+    bins: 3
+    min_per_group: 1
+    group_feature: hier_id
+    features:
+    - toggle_rate
+    - duty_cycle
+    - fanin
+    - fanout
+model:
+  name: ASPP_STGATs
+  num_nodes: 60
+  time_window_size: 60
+  edge_vector_size: 8
+  num_classes: 5
+trainer:
+  epochs: 2
+  batch_size: 1
+loss:
+  name: weighted_ce
+  class_weights:
+  - 1.0
+  - 2.0
+  - 1.0
+  - 1.0
+  - 1.5

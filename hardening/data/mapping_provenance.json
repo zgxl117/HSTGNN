@@ -1,0 +1,6 @@
+{
+  "source": "/home/zgxl117/AI4FaultSim/fault-sim/utils/Logic_level/riscv/regs_hier.csv",
+  "sha256": "3517cafe6861a1b5339d587485780045ec91b3a4df273d1b539d9765727de4f7",
+  "normalization": "strip leading dut.; replace hierarchy dots with slash; exact instance-name join against PPA table",
+  "mapped_registers": 2131
+}

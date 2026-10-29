@@ -1,0 +1,15 @@
+torch>=2.5
+torch-geometric
+pytorch-lightning
+torchmetrics
+numpy
+pandas
+scikit-learn
+PyYAML
+matplotlib
+pytest
+
+# SAC/MOEA backend
+gymnasium>=0.29
+scipy
+psutil

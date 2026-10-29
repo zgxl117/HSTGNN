@@ -1,0 +1,303 @@
+# SAC+MOEA 训练与优化配置文件
+sac:
+  gamma: 0.99                                     # 折扣因子，决定 SAC 对长期回报的重视程度，通常接近 1
+  tau: 0.005                                      # 目标网络软更新系数；数值越小，目标网络更新越平滑
+  lr: 0.0005                                      # 学习率
+  batch_size: 8                                   # SAC 每次参数更新时从经验回放池采样的训练样本数量；较小值可让 SAC 更早开始学习
+  min_replay_size: 8                              # 经验回放池至少积累多少条训练样本后，才允许第一次 SAC 更新
+  updates_per_step: 2                             # 每完成一次 MOEA 反馈步后，执行多少次 SAC 网络更新
+  buffer_size: 500000                             # 经验回放池最大容量，用于保存 SAC 训练样本
+  use_prioritized_replay: true                    # 优先回放高TD误差经验，使少量真正改善前沿的动作被更充分学习
+  priority_alpha: 0.65                            # 优先级强度；0为均匀采样，越大越偏向高价值/高误差样本
+  priority_beta: 0.40                             # 重要性采样初始修正系数，用于降低优先采样带来的估计偏差
+  priority_beta_increment: 0.002                  # 随更新次数逐步增强偏差修正，最终上限为1
+  priority_epsilon: 0.001                         # 优先级下限，避免普通样本永久失去采样机会
+  hidden_dim: 256                                             
+  automatic_entropy_tuning: true                  # 是否自动调节熵系数，使策略兼顾探索性和稳定性
+  alpha: 0.2                                      # 温度参数初始值    
+  max_steps_per_episode: 6                        # 每回合执行6个有效调参步，兼顾样本量与运行时间
+  target_update_interval: 1
+  pure_exploration_steps: 12              # 前12个SAC步保持充分探索，随后由已训练策略接管
+  deterministic_update_start: 64          # 完成足够网络更新后转入均值策略，使后半程专注稳定优化
+  use_deterministic_after_updates: true   # 训练稳定后使用策略均值动作，减少昂贵 MOEA 调参中的随机跳变
+  eval_noise_scale: 0.015                 # 均值策略阶段保留小幅探索噪声
+  action_smoothing: 0.45                  # 保留平滑但避免动作被历史均值过度压平
+  action_smoothing_start_step: 12         # 完成纯探索后开始平滑
+  early_stop_on_stagnation: true          # MOEA 已收敛且长期未刷新全局 best-feasible SER 时，提前结束当前 episode
+  stagnation_min_steps: 6                 # 每回合至少积累6条可归因的调参经验
+  min_sac_steps_before_convergence_stop: 6 # MOEA收敛也需完成最少SAC交互后再结束回合
+  stagnation_patience: 3                  # 连续多少步未刷新全局 best-feasible SER 后早停
+  best_feasible_gain_eps: 1e-6                       # 目标网络更新间隔       
+
+# MOEA 参数
+moea:
+  pop_size: 320                                  # MOEA 种群规模；当前取值用于兼顾搜索广度与仿真耗时
+  max_generations: 50                            # MOEA 最大代数
+  archive_size: 96                               # SPEA2内部档案容量；提高后减少中间预算前沿点丢失
+  initial_heuristic_seeds: 320                   # 初始启发式种子数量，与种群规模匹配以减少额外评估开销
+  greedy_prefix_seed_count: 96                   # 注入初始种群的预算感知贪婪前缀种子数量
+  enable_greedy_archive: true                    # 是否启用贪婪档案集，用于补齐低/中/高预算区间的可行 Pareto 解
+  greedy_archive_size: 1100                      # 保留完整贪婪轨迹、分层构造解和局部改进解，覆盖低/中/高预算区间
+  greedy_archive_injection_count: 96             # 每次 MOEA 调用时注入预算均匀的档案解，维持前沿覆盖
+  warm_start_base_ratio: 0.05                    # episode重置仅固定注入5%历史精英，其余比例交由SAC控制
+  greedy_archive_max_pool: 4000                  # 统一可行档案容量；完整保留基线轨迹和搜索新增点
+  defer_archive_until_policy_ready: true         # 固定基线从开始即用于评分；完成训练前暂不向工作种群注入强基线
+  archive_unlock_updates: 8                      # 完成8次网络更新后，SAC动作才可控制基线精英注入
+  elite_pool_save_limit: 4000                    # 跨episode保存容量，与统一档案容量保持一致
+  enable_greedy_trajectory: true                 # 构造完整边际收益贪婪轨迹，作为混合算法的前沿质量下界
+  greedy_trajectory_refine_count: 64             # 在预算轴上选择 64 个轨迹点做不增加 PPA 的 swap 精修
+  enable_milp_archive: true                       # 用精确数学规划在多个预算档位生成高质量精英种子
+  milp_budget_targets: [0.10, 0.20, 0.35, 0.50, 0.65, 0.80, 1.00] # 相对PPA上限的种子预算档位
+  milp_time_limit_sec: 10                         # 单次MILP求解时间上限，防止大规模电路初始化过慢
+  milp_mip_rel_gap: 0.0001                        # MILP相对最优间隙，兼顾种子质量与运行时间
+  milp_max_iterations: 6                          # Dinkelbach线性分式迭代上限
+  milp_max_variables: 20000                       # 超过该候选规模时自动跳过MILP，保持可扩展性
+  ppa_pareto_only: true                          # Pareto 前沿只硬过滤面积、功耗和 WNS；SER 作为优化目标
+  ser_as_objective: true                         # 残余 SER 不再作为硬约束，避免丢失低/中预算 Pareto 解
+  scoring_aligned_hv: true                       # 训练与收敛统一使用面积开销-残余 SER 的固定参考点 HV
+  score_aligned_environmental_selection: true    # 环境选择直接优化面积-SER前沿；功耗和WNS仅作为硬约束
+  score_aligned_budget_bins: 32                  # 按面积预算分层保留候选，避免前沿集中在满预算区域
+  repair_fill_enabled: true                      # 是否启用修复-填充：先修复 PPA 违例，再用剩余预算继续填充高收益寄存器
+  swap_local_search_enabled: true                # 是否启用交换局部搜索：在满足 PPA 约束时，用高收益未选寄存器替换低收益已选寄存器
+  swap_local_search_max_swaps: 24                # 每个候选解最多执行的有效交换次数
+  swap_local_search_candidate_cap: 96            # 交换局部搜索的候选寄存器数量上限，用于控制运行时间
+  pair_swap_local_search_enabled: true            # 单交换停滞后启用2出2入交换，跳出一阶局部最优
+  pair_swap_local_search_max_swaps: 3             # 每个候选最多执行3次有效双交换
+  pair_swap_selected_cap: 20                      # 双交换时考察的低收益已选寄存器上限
+  pair_swap_unselected_cap: 40                    # 双交换时考察的高效率未选寄存器上限
+  post_swap_fill_enabled: true                    # 交换精修后再次利用释放出的PPA余量，避免可行预算被闲置
+  post_swap_fill_max_additions: 12                # 二次填充最多新增寄存器数，控制精修耗时
+  restart_use_elite_bases: true                   # 受控重启优先从累计可行精英邻域出发，提高有效探索概率
+  restart_elite_base_ratio: 0.70                  # 重启个体中以精英为基底的比例，其余仍从当前种群扰动以保留多样性
+  restart_refine_candidates: true                 # 仅当重启候选违反PPA约束时执行修复，避免无效评估
+  memetic_refine_current_population: true        # 是否在 MOEA 进化过程中，对当前种群中的少量候选解做精修
+  memetic_refine_interval: 3                     # 每隔多少代 MOEA 触发一次当前种群精修
+  memetic_refine_count: 16                       # 每次触发精修时，从当前种群中选择的候选解数量
+  num_processes: 16                              # 并行进程数；在 MOEA 中用于并行评估候选解
+  generations_per_step: 8                        # 每个 SAC 调参步内最多运行的 MOEA 代数
+  fixed_budget_per_sac_step: false               # 每步 MOEA 不强制跑满预算；若 MOEA 已收敛则允许提前结束当前 episode
+  allow_early_stop_on_convergence: true      # MOEA 收敛后允许把收敛信号传给主循环，从而提前结束当前 episode
+  strict_early_stop: false                       # 固定预算模式下是否仍允许严格提前终止
+  use_gpu_acceleration: true                     # MOEA 使用 GPU 加速
+  use_initial_evolution: true                    # 初始化时运行 1 代 MOEA 进化（加快收敛）
+  csv_file: data/merged_registers.csv            # 寄存器数据 CSV 文件路径
+
+training:
+  max_steps: 1000
+  eval_interval: 10000                           # 评估间隔，单位为回合
+  log_interval: 1                                # 日志记录间隔，单位为回合
+  checkpoint_dir: checkpoints
+  max_episodes: 12                               # 12回合×6步，形成72条交互样本并控制完整仿真时长
+  save_interval: 5                               # 开启 episode 中间产物保存时，每隔多少个 episode 保存一次
+
+output:
+  final_results_dir: results
+  save_episode_artifacts: false
+  save_unconverged_episode_artifacts: false
+  save_final_episode_artifacts: false
+  generate_final_constraint_views: true
+
+# 评估器配置
+evaluator:
+  use_gpu: true                                  # 是否启用 GPU 加速评估
+  gpu_batch_size: 768                            # GPU 批处理大小
+  num_processes: 8                               # 并行进程数；在 MOEA 中用于并行评估候选解
+
+# 奖励函数参数
+reward_params:
+  alpha: 8.0                                      # 稀疏的累计可行档案HV突破给予明确高奖励
+  beta: 0.02                                      # PPA由硬约束和repair保证，违例只保留很小辅助惩罚
+  gamma: 0.02                                     # 多样性下降只保留轻量惩罚
+  eta: 0.02                                       # 前沿振荡只保留轻量惩罚
+  zeta: 0.0                                       # 没有固定真实参考前沿时关闭 IGD，避免动态参考集引入噪声
+  epsilon: 1e-6                                   # 避免除零的小值
+  balance_weight: 0.0                             # 不强迫两算法表现相同，允许异构搜索形成分工
+  igd_normalization: 1.0                          # IGD归一化系数  
+  sens_weight: 0.0                                # 关闭与SER重复的旧敏感性奖励，减少重复计分
+  feasible_ser_weight: 12.0                       # 全局最佳可行SER突破奖励
+  feasible_ser_quality_weight: 0.0                # 关闭近常数绝对质量项，避免掩盖动作增量
+  feasible_set_quality_weight: 0.0                # 关闭近常数集合质量项
+  feasible_ratio_weight: 0.0                      # 可行性由硬门控保证，不重复加入常数奖励
+  population_hv_weight: 1.2                       # 当前种群固定口径HV增量的稠密奖励
+  population_hv_gain_scale: 80.0                  # 关闭自适应归一化时使用的HV固定放大系数
+  population_ser_weight: 1.5                      # 当前种群最佳可行SER增量的稠密奖励
+  population_ser_gain_scale: 30.0                 # 关闭自适应归一化时使用的SER固定放大系数
+  adaptive_action_credit: true                    # 用历史增量尺度放大微小但真实的HV/SER动作反馈
+  action_credit_ema_decay: 0.90                   # 增量尺度跨episode平滑保留，避免每回合重新失真
+  action_credit_population_hv_floor: 1.0e-6       # HV增量归一化分母下限
+  action_credit_population_ser_floor: 1.0e-6      # SER相对改善归一化分母下限
+  action_credit_ratio_clip: 4.0                   # tanh前裁剪增量/尺度比值，抑制离群点
+  efficiency_weight: 0.01                         # 仅保留很小代数成本惩罚
+  timing_penalty_weight: 0.05                     # 时序违例辅助惩罚
+  infeasible_ser_penalty: 1.0                     # 当前步无 PPA 可行解时的惩罚
+  cross_ep_improvement_weight: 0.0                # 旧 SER 跨 episode 奖励关闭，改由 PPA 可行 SER主奖励负责
+  absolute_ser_quality_weight: 0.0                # 关闭几乎恒定的绝对项，避免掩盖动作贡献
+  ser_quality_target: 0.072                       # 目标 SER 比例，用于衡量可行解的绝对质量
+  feasible_ser_candidate_limit: 160               # 每个 SAC 步中最多详细检查的可行 SER 候选数量
+  feasible_ser_topk: 10                           # 使用前 k 个可行 SER 值构造更平滑的强化学习奖励信号
+  fallback_ser_quality_target: 0.072              # 当 SER 质量目标被误设为 0 或过小时使用的保护值
+  resource_coverage_weight: 0.0                   # 关闭动作无关的预算覆盖常数项
+  resource_coverage_bins: 8
+  no_improvement_quality_scale: 0.25              # 无突破时降低绝对质量项
+  best_ser_stagnation_penalty_weight: 0.005       # 停滞只施加极轻惩罚，保持奖励以动作质量为主
+  force_clip: false                               # 不采用硬裁剪，避免多个优质动作都饱和为同一奖励
+  use_tanh_scaling: true                          # 使用近原点近似线性的平滑有界压缩
+  reward_soft_bound: 5.0                         # 压缩后奖励渐近限制在[-5,5]，同时保留动作优劣排序
+  reward_clip_min: -5.0                          # 兼容旧硬裁剪路径；当前配置不启用
+  reward_clip_max: 5.0                           # 兼容旧硬裁剪路径；当前配置不启用
+
+# 约束阈值配置
+constraint_thresholds:
+  delta_area_max: 0.2                       # 面积增加不超过20%
+  delta_power_max: 0.5                      # 功耗增加不超过50%
+  slack_min: 0.00                           # 最小 slack
+  delta_sens_min: 0.20                      # 仅作为质量目标与诊断阈值；启用 ser_as_objective 后不参与硬约束
+  base_total_failure_rate: 1e-2
+  voter_failure_rate: 1e-6
+  use_csv_failure_prob: true
+  area_weight: 20
+  power_weight: 20
+  slack_weight: 50.0
+  sens_weight: 1000.0
+  timing_violation_multiplier: 0.5               # 时序违例惩罚倍率；调低可避免违例惩罚掩盖 SER 改善信号
+  strict_timing_mode: false
+
+# 收敛检测参数
+convergence:
+  hv_rel_threshold: 0.001                        # 固定口径 HV 的小幅改进也有效，避免前沿扩展被过早判定为停滞
+  patience: 5                                    # 连续 5 代无档案质量改善后再判定收敛
+  min_generations_before_check: 4                # 至少运行 4 代后开始检查收敛
+  reset_on_convergence: true                     # 收敛后是否重置 MOEA 状态
+                   
+
+# SAC直接控制搜索过程，而不再只微调弱相关的MOEA内部阈值。
+# 8维动作依次为：
+# [SPEA2期望变异位数, SPEA2交叉率, NSGA2期望变异位数, NSGA2交叉率,
+#  SPEA2计算预算占比, 精英注入比例, 局部搜索强度, 部分种群重启比例]
+# 期望变异位数会在运行时按 pm=lambda/K 转换，保证不同电路规模下语义一致。
+action_schema: search_control_v2
+action_low: [1.0, 0.6, 1.0, 0.6, 0.2, 0.0, 0.0, 0.0]
+action_high: [128.0, 1.0, 128.0, 1.0, 0.8, 0.25, 1.0, 0.20]
+
+# 约束支配参数不再由SAC每步随机扰动，按当前电路规模范围的中值固定。
+# SAC通过下列搜索控制量直接改变两个算法的搜索轨迹。
+search_control_bounds:
+  spea2_budget_share: [0.20, 0.80]          # 0.5表示两算法代数相同，偏离后减少弱侧算法更新次数
+  elite_injection_ratio: [0.00, 0.25]       # 每个SAC步向工作种群注入的档案精英比例
+  local_search_strength: [0.00, 1.00]       # 控制memetic精修数量与swap次数
+  restart_ratio: [0.00, 0.20]               # 受控扰动重启比例；外部全局档案不受影响
+
+# 自适应参数配置（根据电路规模 K 动态调整）
+adaptive_parameters:
+  enable: true
+
+  # 小规模电路（K <= 50）
+  small_scale:
+    K_threshold: 50
+    epsilon: [0.01, 0.1]                    # 支配容忍度
+    accept_threshold: [0.05, 0.3]           # 接纳阈值
+    delta_div: [0.05, 0.3]                  # 多样性因子
+    beta_penalty: [5.0, 30.0]               # 惩罚因子
+    pm: [0.05, 0.3]                         # 变异概率
+    mutation_flips: [1.0, 6.0]              # 每个个体期望翻转的基因位数
+    pc: [0.6, 0.9]                          # 交叉概率
+    pop_size: 50                            # MOEA 种群规模；当前取值用于兼顾搜索广度与仿真耗时
+
+  # 中等规模电路（50 < K <= 500）
+  medium_scale:
+    K_threshold: 500
+    epsilon: [0.005, 0.05]
+    accept_threshold: [0.02, 0.2]
+    delta_div: [0.02, 0.2]
+    beta_penalty: [10.0, 50.0]
+    pm: [0.01, 0.1]
+    mutation_flips: [1.0, 16.0]
+    pc: [0.6, 0.95]
+    pop_size: 100                                # MOEA 种群规模；当前取值用于兼顾搜索广度与仿真耗时
+
+  # 大规模电路（500 < K <= 2000）
+  large_scale:
+    K_threshold: 2000
+    epsilon: [0.001, 0.02]
+    accept_threshold: [0.01, 0.15]
+    delta_div: [0.01, 0.15]
+    beta_penalty: [20.0, 80.0]
+    pm: [0.05, 0.30]                        # 提高变异率上限以增强探索能力
+    mutation_flips: [2.0, 64.0]
+    pc: [0.7, 0.98]
+    pop_size: 200                                # MOEA 种群规模；当前取值用于兼顾搜索广度与仿真耗时
+
+  # 超大规模电路（K > 2000）
+  very_large_scale:
+    epsilon: [0.0005, 0.01]
+    accept_threshold: [0.005, 0.1]
+    delta_div: [0.005, 0.1]
+    beta_penalty: [30.0, 100.0]
+    pm: [0.001, 0.03]
+    mutation_flips: [4.0, 128.0]
+    pc: [0.8, 1.0]
+    pop_size: 500                                # MOEA 种群规模；当前取值用于兼顾搜索广度与仿真耗时
+
+# 仅作为关闭自适应范围时的后备初值；正常运行会使用当前K对应范围的中值。
+initial_action: [16.0, 0.85, 16.0, 0.85, 0.50, 0.08, 0.50, 0.05]
+
+# 24维紧凑状态：16维评分/约束/双算法状态 + 8维上一执行动作。
+# 删除动态min-max统计、无外部参考前沿时恒为0的IGD和重复专家特征，降低小样本训练噪声。
+state_schema: compact_score_aligned_v1
+state_dim: 24
+use_algorithm_specific_states: false            # 双算法HV已显式包含在紧凑状态中，不再重复追加24维状态
+
+# ============ 混合策略优化选项 ============
+hybrid_strategy:
+  enable_hybrid: true                            # 是否启用混合优化策略，同时运行 NSGA2 和 SPEA2
+  enable_per_gen_merging: true                # 启用每代合并种群
+  hybrid_mode: 'parallel'                        # 混合模式：parallel 表示并行运行，sequential 表示顺序运行
+  merge_strategy: 'pareto_union'                 # 合并策略：pareto_union 表示 Pareto 前沿并集，crowding_union 表示按拥挤度合并
+
+# ============ 大规模优化选项 ============
+large_scale_optimization:
+  enable: true                                # 启用大规模优化
+  auto_select_strategy: true                     # 是否根据寄存器数量 K 自动选择优化策略
+  
+  # 策略选择阈值
+  small_scale_threshold: 50                      # 小规模阈值：K 不超过该值时优先使用传统 GA
+  medium_scale_threshold: 100                    # 中等规模阈值：K 位于小规模与该阈值之间时使用混合模式
+  large_scale_threshold: 100                     # 大规模阈值：K 超过该值时优先使用 DE 模式
+  
+  # DE（差分进化）参数
+  de:
+    F_init: 0.8                               # 初始缩放因子
+    F_end: 0.4                                # 最终缩放因子
+    CR: 0.3                                   # 交叉概率
+    adaptive_F: true                             # 是否启用差分进化缩放因子的自适应调整
+    F_min: 0.1
+    F_max: 1.0
+  
+  # 变量分组参数
+  variable_grouping:
+    enable: true                              # 启用变量分组
+    group_size: 10                            # 每组变量数量
+    adaptive_group_size: true                 # 根据K自适应分组大小
+    
+  # 局部搜索参数
+  local_search:
+    enable: true                              # 启用局部搜索
+    rate: 0.3                                 # 局部搜索比例
+    probability: 0.5                          # 局部搜索概率
+    max_flips_per_step: 5                     # 每步最多翻转位数
+
+# ============ 优化选项 ============
+optimization:
+  enable_heuristic_initialization: true       # 启用启发式初始化
+  enable_incremental_pareto: true                # 是否启用增量式 Pareto 前沿维护
+  enable_computation_cache: true                 # 是否启用 HV、IGD 和多样性指标缓存
+  enable_performance_profiling: false         # 启用性能分析
+  gpu_batch_size: 768                            # GPU 批处理大小
+  max_processes: 16                           # 最多进程数限制
+  reuse_moea_hv: true                            # 是否复用 MOEA 内部已经计算过的 HV
+
+# voter 参数
+voter:
+  voter_delay: 0.13
+  voter_area: 0.5
+  voter_power: 0.2

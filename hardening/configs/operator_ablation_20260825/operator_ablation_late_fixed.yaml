@@ -1,0 +1,384 @@
+sac:
+  gamma: 0.99
+  tau: 0.005
+  lr: 0.0005
+  batch_size: 8
+  min_replay_size: 8
+  updates_per_step: 2
+  buffer_size: 500000
+  use_prioritized_replay: true
+  priority_alpha: 0.65
+  priority_beta: 0.4
+  priority_beta_increment: 0.002
+  priority_epsilon: 0.001
+  hidden_dim: 256
+  automatic_entropy_tuning: true
+  alpha: 0.2
+  max_steps_per_episode: 6
+  target_update_interval: 1
+  pure_exploration_steps: 12
+  deterministic_update_start: 64
+  use_deterministic_after_updates: true
+  eval_noise_scale: 0.015
+  action_smoothing: 0.45
+  action_smoothing_start_step: 12
+  early_stop_on_stagnation: true
+  stagnation_min_steps: 6
+  min_sac_steps_before_convergence_stop: 6
+  stagnation_patience: 3
+  best_feasible_gain_eps: 1e-6
+moea:
+  pop_size: 320
+  max_generations: 50
+  archive_size: 96
+  initial_heuristic_seeds: 320
+  greedy_prefix_seed_count: 96
+  enable_greedy_archive: true
+  greedy_archive_size: 1100
+  greedy_archive_injection_count: 96
+  warm_start_base_ratio: 0.05
+  greedy_archive_max_pool: 4000
+  defer_archive_until_policy_ready: true
+  archive_unlock_updates: 8
+  elite_pool_save_limit: 4000
+  enable_greedy_trajectory: true
+  greedy_trajectory_refine_count: 64
+  enable_milp_archive: true
+  milp_budget_targets:
+  - 0.1
+  - 0.2
+  - 0.35
+  - 0.5
+  - 0.65
+  - 0.8
+  - 1.0
+  milp_time_limit_sec: 10
+  milp_mip_rel_gap: 0.0001
+  milp_max_iterations: 6
+  milp_max_variables: 20000
+  ppa_pareto_only: true
+  ser_as_objective: true
+  scoring_aligned_hv: true
+  score_aligned_environmental_selection: true
+  score_aligned_budget_bins: 32
+  repair_fill_enabled: true
+  swap_local_search_enabled: true
+  swap_local_search_max_swaps: 24
+  swap_local_search_candidate_cap: 96
+  pair_swap_local_search_enabled: true
+  pair_swap_local_search_max_swaps: 3
+  pair_swap_selected_cap: 20
+  pair_swap_unselected_cap: 40
+  post_swap_fill_enabled: true
+  post_swap_fill_max_additions: 12
+  restart_use_elite_bases: true
+  restart_elite_base_ratio: 0.7
+  restart_refine_candidates: true
+  memetic_refine_current_population: true
+  memetic_refine_interval: 3
+  memetic_refine_count: 16
+  num_processes: 16
+  generations_per_step: 8
+  fixed_budget_per_sac_step: false
+  allow_early_stop_on_convergence: true
+  strict_early_stop: false
+  use_gpu_acceleration: true
+  use_initial_evolution: true
+  csv_file: data/merged_registers.csv
+training:
+  max_steps: 1000
+  eval_interval: 10000
+  log_interval: 1
+  checkpoint_dir: checkpoints
+  max_episodes: 12
+  save_interval: 5
+output:
+  final_results_dir: results
+  save_episode_artifacts: false
+  save_unconverged_episode_artifacts: false
+  save_final_episode_artifacts: false
+  generate_final_constraint_views: true
+evaluator:
+  use_gpu: true
+  gpu_batch_size: 768
+  num_processes: 8
+reward_params:
+  alpha: 8.0
+  beta: 0.02
+  gamma: 0.02
+  eta: 0.02
+  zeta: 0.0
+  epsilon: 1e-6
+  balance_weight: 0.0
+  igd_normalization: 1.0
+  sens_weight: 0.0
+  feasible_ser_weight: 12.0
+  feasible_ser_quality_weight: 0.0
+  feasible_set_quality_weight: 0.0
+  feasible_ratio_weight: 0.0
+  population_hv_weight: 1.2
+  population_hv_gain_scale: 80.0
+  population_ser_weight: 1.5
+  population_ser_gain_scale: 30.0
+  adaptive_action_credit: true
+  action_credit_ema_decay: 0.9
+  action_credit_population_hv_floor: 1.0e-06
+  action_credit_population_ser_floor: 1.0e-06
+  action_credit_ratio_clip: 4.0
+  efficiency_weight: 0.01
+  timing_penalty_weight: 0.05
+  infeasible_ser_penalty: 1.0
+  cross_ep_improvement_weight: 0.0
+  absolute_ser_quality_weight: 0.0
+  ser_quality_target: 0.072
+  feasible_ser_candidate_limit: 160
+  feasible_ser_topk: 10
+  fallback_ser_quality_target: 0.072
+  resource_coverage_weight: 0.0
+  resource_coverage_bins: 8
+  no_improvement_quality_scale: 0.25
+  best_ser_stagnation_penalty_weight: 0.005
+  force_clip: false
+  use_tanh_scaling: true
+  reward_soft_bound: 5.0
+  reward_clip_min: -5.0
+  reward_clip_max: 5.0
+constraint_thresholds:
+  delta_area_max: 0.2
+  delta_power_max: 0.5
+  slack_min: 0.0
+  delta_sens_min: 0.2
+  base_total_failure_rate: 1e-2
+  voter_failure_rate: 1e-6
+  use_csv_failure_prob: true
+  area_weight: 20
+  power_weight: 20
+  slack_weight: 50.0
+  sens_weight: 1000.0
+  timing_violation_multiplier: 0.5
+  strict_timing_mode: false
+convergence:
+  hv_rel_threshold: 0.001
+  patience: 5
+  min_generations_before_check: 4
+  reset_on_convergence: true
+action_schema: search_control_v2
+action_low:
+- 1.0
+- 0.6
+- 1.0
+- 0.6
+- 0.2
+- 0.0
+- 0.0
+- 0.0
+action_high:
+- 128.0
+- 1.0
+- 128.0
+- 1.0
+- 0.8
+- 0.25
+- 1.0
+- 0.2
+search_control_bounds:
+  spea2_budget_share:
+  - 0.2
+  - 0.8
+  elite_injection_ratio:
+  - 0.0
+  - 0.25
+  local_search_strength:
+  - 0.0
+  - 1.0
+  restart_ratio:
+  - 0.0
+  - 0.2
+adaptive_parameters:
+  enable: true
+  small_scale:
+    K_threshold: 50
+    epsilon:
+    - 0.01
+    - 0.1
+    accept_threshold:
+    - 0.05
+    - 0.3
+    delta_div:
+    - 0.05
+    - 0.3
+    beta_penalty:
+    - 5.0
+    - 30.0
+    pm:
+    - 0.05
+    - 0.3
+    mutation_flips:
+    - 1.0
+    - 6.0
+    pc:
+    - 0.6
+    - 0.9
+    pop_size: 50
+  medium_scale:
+    K_threshold: 500
+    epsilon:
+    - 0.005
+    - 0.05
+    accept_threshold:
+    - 0.02
+    - 0.2
+    delta_div:
+    - 0.02
+    - 0.2
+    beta_penalty:
+    - 10.0
+    - 50.0
+    pm:
+    - 0.01
+    - 0.1
+    mutation_flips:
+    - 1.0
+    - 16.0
+    pc:
+    - 0.6
+    - 0.95
+    pop_size: 100
+  large_scale:
+    K_threshold: 2000
+    epsilon:
+    - 0.001
+    - 0.02
+    accept_threshold:
+    - 0.01
+    - 0.15
+    delta_div:
+    - 0.01
+    - 0.15
+    beta_penalty:
+    - 20.0
+    - 80.0
+    pm:
+    - 0.05
+    - 0.3
+    mutation_flips:
+    - 2.0
+    - 64.0
+    pc:
+    - 0.7
+    - 0.98
+    pop_size: 200
+  very_large_scale:
+    epsilon:
+    - 0.0005
+    - 0.01
+    accept_threshold:
+    - 0.005
+    - 0.1
+    delta_div:
+    - 0.005
+    - 0.1
+    beta_penalty:
+    - 30.0
+    - 100.0
+    pm:
+    - 0.001
+    - 0.03
+    mutation_flips:
+    - 4.0
+    - 128.0
+    pc:
+    - 0.8
+    - 1.0
+    pop_size: 500
+initial_action:
+- 16.0
+- 0.85
+- 16.0
+- 0.85
+- 0.5
+- 0.08
+- 0.5
+- 0.05
+state_schema: compact_score_aligned_v1
+state_dim: 24
+use_algorithm_specific_states: false
+hybrid_strategy:
+  enable_hybrid: true
+  enable_per_gen_merging: true
+  hybrid_mode: parallel
+  merge_strategy: pareto_union
+large_scale_optimization:
+  enable: true
+  auto_select_strategy: true
+  small_scale_threshold: 50
+  medium_scale_threshold: 100
+  large_scale_threshold: 100
+  de:
+    F_init: 0.8
+    F_end: 0.4
+    CR: 0.3
+    adaptive_F: true
+    F_min: 0.1
+    F_max: 1.0
+  variable_grouping:
+    enable: true
+    group_size: 10
+    adaptive_group_size: true
+  local_search:
+    enable: true
+    rate: 0.3
+    probability: 0.5
+    max_flips_per_step: 5
+optimization:
+  enable_heuristic_initialization: true
+  enable_incremental_pareto: true
+  enable_computation_cache: true
+  enable_performance_profiling: false
+  gpu_batch_size: 768
+  max_processes: 16
+  reuse_moea_hv: true
+voter:
+  voter_delay: 0.13
+  voter_area: 0.5
+  voter_power: 0.2
+operator_control:
+  mode: fixed
+  source_history: D:\OneDrive\Desktop\SAC_parallel_gpu_bak\logs\sac_moea_20260825_225336\all_parameters_history.csv
+  tail_steps: 24
+  action_columns:
+  - mutation_flips_spea2
+  - pc_spea2
+  - mutation_flips_nsga2
+  - pc_nsga2
+  - spea2_budget_share
+  - elite_injection_ratio
+  - local_search_strength
+  - restart_ratio
+  action_low:
+  - 28.90752690409241
+  - 0.83176641157867
+  - 25.741041812998414
+  - 0.8337640175858516
+  - 0.579490882431301
+  - 0.0967869416423969
+  - 0.5088955252582273
+  - 0.1175097265462833
+  action_high:
+  - 31.684157132540683
+  - 0.8450193146400494
+  - 29.33320828034448
+  - 0.8461243042569505
+  - 0.6625502706848152
+  - 0.1238938996695852
+  - 0.625436251713404
+  - 0.1417859522767687
+  fixed_action:
+  - 29.947938073186563
+  - 0.8400416906548738
+  - 27.304708270744122
+  - 0.8390237016633383
+  - 0.6332493976766131
+  - 0.10603425081737619
+  - 0.5667266389311214
+  - 0.12782454467763124

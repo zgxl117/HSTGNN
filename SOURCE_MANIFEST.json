@@ -1,0 +1,33 @@
+{
+  "repository": "https://github.com/zgxl117/AI4FaultSim",
+  "commit": "95b8e7bd1db7f3672918e8ee018eba9eb4fd25c2",
+  "subdirectory": "HSTGNN",
+  "extracted_on": "2026-10-24",
+  "standalone_destination": "/home/zgxl117/HSTGNN",
+  "unchanged_source_files": {
+    "models/gnnmodels/aspp_stgat.py": "8fe8e35a4ac2d927c6baed17de879b750553312aec3a32da27dfd8354c24228f",
+    "models/gnnmodels/aspp_stgcn.py": "ae74fc342bd6be3e92be7f4a82aee65d80e242a39e1d3efaf6166c962f4b5740",
+    "models/gnnmodels/graphsage.py": "2b19ca1534a22afe51528e2fa32d25322ed80b8e79ea5928e144060412c20da1",
+    "models/gnnmodels/stgcn.py": "49365c3960932fd23ebb63d6493267af4d65869ac6438d53a1a15a943c3771dd",
+    "models/models.py": "fddd81b4ba00d4524d4c2bd9604abf48ac05d1f127f8430a73a08111e856c3a0",
+    "mydatasets/__init__.py": "dea4d4392a966d3756059f3eeb16d59c3b27dbf130e19f0e403f372bff96a250",
+    "mydatasets/customized_dataset.py": "17e2cd1baf5835ff9b7fdd3fbb05f5f6ab8256c938e9e8afc612fc5ce97b6aa9",
+    "mydatasets/data_preprocessing.py": "f4f3724da8eaa0fd2313c0f207c027cc87d3ce9d0848412c1e645cc37f8adf19",
+    "mydatasets/data_splitting.py": "97164e189c73ad0e71dcc9238ff0f002aaab8b45940cc09ca7c58fac4ffffbed",
+    "predict.py": "1d3001521504ddc54aa2549f01c58d23caf2bc49c9a1f587a966913e4167166c",
+    "predict_config.yaml": "4b6ca44898ed7d652cd319456ee795844d5289312a433ba0fe7e9744e947ceb7",
+    "requirements.txt": "68afaa84a2b25eb94c769baef2281fb858a0c8e1a709013402a5ce507469cbd4",
+    "tests/conftest.py": "a8ffc07128fbeede223546ecc3b63c5a4fd1082739f0bce7e4e91edfef6fc415",
+    "tests/test_aspp_stgat.py": "59c76c6678e941747a3087eacdcbea1f45a51929bc293362d1c71b3897e26da9",
+    "tests/test_custom_graph_dataset.py": "6695ea79da2b7cc51cef60180bc70d98c7267533dc00500a38d8b28da79b632b",
+    "tests/test_data_splitting.py": "f236a3c36b1333eac4361a26d3e933a8a60667f23a613a629a79783c758b4d93",
+    "train.py": "ded52665fd0ba5e058aeedf40f4ad0ce48e9300bf03349d6ba6c3f243f9943dc",
+    "train_config.yaml": "4a18e28adf2c493388b8c96f028c7f4148e27064fe9450d7d5ef47c9d3094655",
+    "train_hierarchical.py": "8f6f31a398036b147c1629e4caf6bdbac45d2eefcb0d018c649a8dd9c996e6b6",
+    "utils/analyze.py": "47828731f22edcd6d294fc08dabb3c486f033d79ae24eab8944ebe58f1ccd608",
+    "utils/bias_analyze.py": "3f63b2e57fc48bc7be5494fda89896a73eece2437233f4e87d7f022266ee1ed3",
+    "utils/config.py": "fe052af29d3a4aa4bd315713b06e72ce62c0e8ca409841cadd0cda397f09d0dd",
+    "utils/outputgraph.py": "160e087db1c0fa40b88a8a9ad86af3d9571bee022d1eaa9dbaa6df685340ae36",
+    "utils/utils.py": "cc2448a03c897493af78598f0760c440d525befc031bac871731d6750905d36c"
+  }
+}

@@ -1,0 +1,10 @@
+name: riscv_2131
+ppa_csv: ../data/merged_registers.csv
+mapping_csv: ../data/riscv_register_mapping.csv
+optimizer_config: ../configs/sac_config.yaml
+candidate_count: 1380
+optimizer_overrides:
+  moea:
+    enable_milp_archive: false
+  operator_control:
+    mode: adaptive
